@@ -1,16 +1,20 @@
 import React, { Component } from 'react'
 import {
     Container,
-    Header
+    Statistic
 } from 'semantic-ui-react';
 
 class Total extends Component {
     render() {
         return (
+          this.props.total ?
             <Container>
-                <Header as='h1'>Total</Header>
-                <Header as='h4'>$1234.00</Header>
+                <Statistic>
+                  <Statistic.Label>Total</Statistic.Label>
+                  <Statistic.Value>$ {this.props.total.toFixed(2)}</Statistic.Value>
+                </Statistic>
             </Container>
+          : null
         )
     }
 }

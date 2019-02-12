@@ -1,92 +1,103 @@
 import React, { Component } from 'react';
 import {
-    Button,
-    Container,
-    Dropdown,
-    Form,
-    Grid,
-    Header,
-    Radio
+  Container,
+  Grid,
+  Header
 } from 'semantic-ui-react';
-import cars from '../data/cars';
+import AppForm from './AppForm';
+import Resume from './Resume';
 import Total from './Total';
-const years = [{
-    "key": "1",
-    "value": "1",
-    "text": "2016"
-},
-{
-    "key": "2",
-    "value": "2",
-    "text": "2017"
-},
-{
-    "key": "3",
-    "value": "3",
-    "text": "2018"
-},
-{
-    "key": "4",
-    "value": "4",
-    "text": "2019"
-}];
+import {
+  getYearDifference,
+  getBrandPercentage,
+  getPlanPercentage
+} from '../utils/helper';
+
 class App extends Component {
-    constructor(props) {
-      super(props)
-    
-      this.state = {
-         
-      }
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      brand: '',
+      plan: '',
+      total: 0,
+      year: ''
     }
 
-    handleChange = (e, { value }) => this.setState({ value })
-    
-    render() {
-        return (
-            <Container style={{ marginTop: '3em' }}>
-                <Header as='h1' dividing>CarQuotes</Header>
-                <Grid columns={2} stackable>
-                    <Grid.Column>
-                        <Form>
-                            <Form.Field>
-                                <Dropdown placeholder='Brand' fluid selection options={cars} />
-                            </Form.Field>
-                            <Form.Field>
-                                <Dropdown placeholder='Year' fluid selection options={years} />
-                            </Form.Field>
-                            <Form.Field>
-                                Selecte your favorite plan: <b>{this.state.value}</b>
-                            </Form.Field>
-                            <Form.Field>
-                                <Radio
-                                    label='Basic'
-                                    name='radioGroup'
-                                    value='Basic'
-                                    checked={this.state.value === 'Basic'}
-                                    onChange={this.handleChange}
-                                />
-                            </Form.Field>
-                            <Form.Field>
-                                <Radio
-                                    label='Full'
-                                    name='radioGroup'
-                                    value='Full'
-                                    checked={this.state.value === 'Full'}
-                                    onChange={this.handleChange}
-                                />
-                            </Form.Field>
-                            <Form.Field>
-                                <Button color='black' size='big'>Quote</Button>
-                            </Form.Field>
-                        </Form>
-                    </Grid.Column>
-                    <Grid.Column>
-                        <Total />
-                    </Grid.Column>
-                </Grid>
-            </Container>
-        );
-    }
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleSelectedPlan = this.handleSelectedPlan.bind(this);
+    this.handleSelectedBrand = this.handleSelectedBrand.bind(this);
+    this.handleSelectedYear = this.handleSelectedYear.bind(this);
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    const { brand, plan, year } = this.state;
+    // Starting price
+    let total = 2000;
+    const yearDifference = getYearDifference(year);
+    // Get 3%
+    total -= ((yearDifference * 3) * total) / 100;
+    // Get brand percentage
+    total = getBrandPercentage(brand) * total;
+    // Get plan percentage
+    total = getPlanPercentage(plan) * total;
+
+    this.setState({
+      total
+    });
+  }
+
+  handleSelectedPlan(e, { value }) {
+    this.setState({
+      plan: value
+    });
+  }
+
+  handleSelectedBrand(e, data) {
+    this.setState({
+      brand: data.options[data.value - 1].text
+    })
+  }
+
+  handleSelectedYear(e, data) {
+    this.setState({
+      year: data.options[data.value - 1].text
+    })
+  }
+
+  render() {
+    const { brand, plan, year, total } = this.state;
+    return (
+      <Container style={{ marginTop: '100px' }}>
+        <Header as='h1' dividing>CarQuotes</Header>
+        <Grid columns={3} stackable>
+          <Grid.Column>
+            <AppForm
+              handleSubmit={this.handleSubmit}
+              handleSelectedBrand={this.handleSelectedBrand}
+              handleSelectedYear={this.handleSelectedYear}
+              handleSelectedPlan={this.handleSelectedPlan}
+              brand={brand}
+              plan={plan}
+              year={year}
+            />
+          </Grid.Column>
+          <Grid.Column>
+            <Resume
+              brand={brand}
+              plan={plan}
+              year={year}
+              shouldDisplay={total}
+            />
+          </Grid.Column>
+          <Grid.Column>
+            <Total total={total} />
+          </Grid.Column>
+        </Grid>
+      </Container>
+    );
+  }
 }
 
 export default App;
